@@ -1,3 +1,4 @@
  bind_addr = ":8080"
  log_level = "debug"
  database_url = "host=localhost dbname=videoserver sslmode=disable"
+ session_key = "f7aZ9k2pX4sT6vB8nQ0wE1rY3uH5jM"

@@ -2,6 +2,7 @@ package videoserver
 
 import (
 	"database/sql"
+	"github.com/gorilla/sessions"
 	"net/http"
 	"video/iternal/app/store/sqlstore"
 )
@@ -14,7 +15,8 @@ func Start(config *Config) error {
 	defer db.Close()
 
 	store := sqlstore.New(db)
-	s := newServer(store)
+	sessionStore := sessions.NewCookieStore([]byte(config.SessionKey))
+	s := newServer(store, sessionStore)
 	return http.ListenAndServe(config.BindAddr, s)
 }
 

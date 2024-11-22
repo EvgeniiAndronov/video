@@ -29,6 +29,10 @@ func (u *User) Sanitize() {
 	u.Password = ""
 }
 
+func (u *User) ComparePassword(password string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(u.EncryptedPassword), []byte(password)) == nil
+}
+
 func (u *User) Validate() error {
 	return validation.ValidateStruct(
 		u,
