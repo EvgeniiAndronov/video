@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"video/iternal/app/store/teststore"
 )
 
-func TestVideoServer_HandlHello(t *testing.T) {
-	s := New(NewConfig())
+func TestServer_HandlUsersCreate(t *testing.T) {
 	rec := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/hello", nil)
-	s.handleHello().ServeHTTP(rec, req)
-	//assert.Equal(t, req.Body.String(), "Hello world!")
-	assert.Equal(t, http.StatusOK, rec.Code)
+	req, _ := http.NewRequest("POST", "/users", nil)
+	s := newServer(teststore.New())
+	s.ServeHTTP(rec, req)
+	assert.Equal(t, rec.Code, http.StatusOK)
 }

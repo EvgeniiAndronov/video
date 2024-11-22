@@ -24,8 +24,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	s := videoserver.New(config)
-	if err := s.Start(); err != nil {
+	if err := videoserver.Start(config); err != nil {
 		log.Fatal(err)
 	}
 

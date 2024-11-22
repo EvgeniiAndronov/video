@@ -1,68 +1,32 @@
 package videoserver
 
 import (
-	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
-	"io"
+	"database/sql"
 	"net/http"
-	"video/iternal/app/store"
+	"video/iternal/app/store/sqlstore"
 )
 
-type VideoServer struct {
-	config *Config
-	logger *logrus.Logger
-	router *mux.Router
-	store  *store.Store
-}
-
-func New(config *Config) *VideoServer {
-	return &VideoServer{
-		config: config,
-		logger: logrus.New(),
-		router: mux.NewRouter(),
-	}
-}
-
-func (s *VideoServer) Start() error {
-	if err := s.configLogger(); err != nil {
-		return err
-	}
-
-	s.configRouter()
-
-	if err := s.configureStore(); err != nil {
-		return err
-	}
-
-	s.logger.Info("starting video server")
-	return http.ListenAndServe(s.config.BindAddr, s.router)
-}
-
-func (s *VideoServer) configLogger() error {
-	level, err := logrus.ParseLevel(s.config.LogLevel)
+func Start(config *Config) error {
+	db, err := newDB(config.DatabaseURL)
 	if err != nil {
 		return err
 	}
-	s.logger.SetLevel(level)
-	return nil
+	defer db.Close()
+
+	store := sqlstore.New(db)
+	s := newServer(store)
+	return http.ListenAndServe(config.BindAddr, s)
 }
 
-func (s *VideoServer) configureStore() error {
-	st := store.New(s.config.Store)
-	if err := st.Open(); err != nil {
-		return err
+func newDB(databaseURL string) (*sql.DB, error) {
+	db, err := sql.Open("postgres", databaseURL)
+	if err != nil {
+		return nil, err
 	}
-	s.store = st
 
-	return nil
-}
-
-func (s *VideoServer) configRouter() {
-	s.router.HandleFunc("/hello", s.handleHello())
-}
-
-func (s *VideoServer) handleHello() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, "Hello world!")
+	if err = db.Ping(); err != nil {
+		return nil, err
 	}
+
+	return db, nil
 }
